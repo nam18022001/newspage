@@ -1,0 +1,240 @@
+1,2,3,4,5,6.
+Mình sẽ nói về 2 field position và status :
+postion : cấp bậc của tài khoản
+0 = Tác giả
+1 = Quản trị viên
+status : trạng thái của tài khoản
+0 = Hoạt động
+1 = Khoá
+
+7.
+Phân quyền sidebar :
+Nếu tài khoản là admin (position = 1) thì chúng ta sẽ hiển thị chức năng về chuyên mục và cài đặt chung.
+Còn ngược lại nếu tài khoản là tác giả (position = 0) thì chúng ta sẽ ẩn hai cái chức năng này đi.
+
+8,9.
+//
+Như các bạn đã biết chuyên mục (tiếng anh là categories) dùng để chứa đựng các bài viết có nội dung tương tự nhau, cùng nói về một lĩnh vực nào đó. 
+
+Các đặc điểm và chức năng trong phần này là :
+
+Có 3 cấp chuyên mục (lớn/nhỏ/vừa)
+Tạo chuyên mục
+Chỉnh sửa chuyên mục
+Xoá chuyên mục
+Phân cấp và sắp xếp chuyên mục
+Bảng hiển thị danh sách chuyên mục
+Phân quyền tài khoản (chỉ có quản trị viên mới được sử dụng chức năng này)
+
+//
+Chúng ta sẽ quan tâm đến 2 field type và parent_id :
+
+type : phân cấp cho chuyên mục
+1 = Lớn
+2 = Vừa 
+3 = Nhỏ
+parent_id : chứa id chuyên mục cha
+Nếu chuyên mục lớn thì parent_id = 0 (tức là không có chuyên mục cha).
+Còn nếu chuyên mục nhỏ, vừa thì parent_id là id của chuyên mục cha chứa nó.  
+Bây giờ chúng ta sẽ đi qua xây dựng các chức năng của chuyên mục.
+
+//
+Trong phần chuyên mục này sẽ phân ra 3 trang :
+
+Trang hiển thị danh sách chuyên mục (http://domain.com/admin/categories/)
+Trang thêm chuyên mục (http://domain.com/admin/categories/add)
+Trang chỉnh sửa chuyên mục (http://domain.com/admin/categories/edit/id)
+10 11.
+Một trong những phần không thể thiếu của trang tin tức đó là hình ảnh (tiếng anh là images). 
+Một bài viết mà không có hình ảnh minh hoạ thì rất là nhàm chán 
+Cho nên vì thế chúng ta sẽ xây dựng chức năng này cho ứng dụng của mình.
+
+Các đặc điểm và chức năng trong phần này là:
+
+Upload ảnh
+Kiểm tra lượng ảnh upload tối đa trong một lần.
+Kiểm tra kích thước (size) của ảnh khi upload.
+Kiểm tra đuôi mở rộng của ảnh khi upload.
+Xoá ảnh 
+Bảng hiển thị danh sách hình ảnh
+Không phần quyền tài khoản (vì các tác giả có thể upload hình ảnh cho bài viết của mình).
+
+//
+Để tạo folder chứa các hình ảnh, các bạn tạo cho mình folder upload cùng cấp với folder admin.
+ Mình không để folder này trong folder admin vì khi người dùng xem url ảnh thì sẽ thấy đường dẫn /admin/upload/ nên rất là nguy hiểm.
+ 12.
+ Đây có lẽ là phần quan trọng nhất của ứng dụng này rồi nhỉ? 
+ Bài viết (tiếng anh là posts) sẽ bao gồm nội dung của một lĩnh vực nào đó (chuyên mục) và có thể kèm hình ảnh, mô tả, tiêu đề, ... 
+
+Các đặc điểm và chức năng trong phần này là:
+
+Viết bài
+Chỉnh sửa bài viết
+Phân quyền theo ID của tác giả viết bài (ngoại trừ quản trị viên)
+Xoá bài viết
+Danh sách bài viết
+Phân trang và tìm kiếm
+Hiển thị những bài viết thuộc theo từng tài khoản (ngoại trừ quản trị viên)
+//
+Mình sẽ giải thích một số field:
+
+title: tiều đề bài viết
+descr: mô tả bài viết
+url_thumb: url thumbnail (ảnh nhỏ) bài viết
+slug: url bài viết
+keywords: từ khoá bài viết
+body: nội dung bài viết
+cate_1_id, cate_2_id, cate_3_id: ID chuyên mục lớn/vừa/nhỏ của bài viết
+author_id: ID tác giả của bài viết
+status: trạng thái của bài viết
+status = 0: xuất bản
+status = 1: ẩn
+view: lượt xem bài viết
+13.
+Như mình đã đề cập ở bài trước, phần hiển thị danh sách bài viết sẽ bao gồm:
+
+Danh sách bài viết (Hiển thị theo bài viết của tác giả, ngoại trừ admin)
+Phân trang (theo phương thức GET trên thanh address)
+Tìm kiếm (theo ID, tiêu đề, url)
+//
+Thư viện CKEditor
+Đây là một thư viện editor cho web, nó có các chức năng gần giống như Word để giúp trong quá trình viết bài. 
+Để tải thư viện này các bạn truy cập đường dẫn http://ckeditor.com/download, 
+mình khuyên các bạn nên chọn verison Standdard Package vì nó có đầy đủ chức năng cho ứng dụng của mình rồi,
+ không cần verison Full Package cho nặng hệ thống. 
+
+Sau khi download xong, các bạn giải nén file trong thư mục admin, chúng ta sẽ được folder admin/ckeditor
+14.
+Đây là một số chức năng liên quan đến hoạt động và các thông tin về SEO của ứng dụng như tiêu đề, mô tả, từ khoá,... 
+
+Các đặc điểm và chức năng trong phần này là:
+
+Phân quyền admin (chỉ có admin mới có quyền truy cập)
+Chế độ đóng/mở hoạt động của ứng dụng
+Chỉnh sửa các thông tin về SEO của ứng dụng
+
+//
+title: tiêu đề website
+descr: mô tả website
+keywords: từ khoá website
+status: trạng thái website
+status = 0: Không hoạt động
+status = 1: Hoạt động
+Mình đã insert sẵn 2 field title và status luôn rồi nhé!
+15.
+Chức năng này dùng để quản lý tài khoản của các tác giả. Gồm có các chức năng sau:
+
+Thêm tài khoản
+Mở/khoá tài khoản
+Xoá tài khoản
+Các bạn thắc mắc vì sao không có chức năng chỉnh sửa phải không?
+Theo mình các chức năng "nhạy cảm" như thế này thì khi nào tác giả quên mật khẩu, cứ liên hệ admin vào database mà lấy :v
+// 
+Lưu ý và chỉnh sửa
+Ở trong bài 6, chúng ta đã tạo table accounts, nên trong bài này chúng ta sẽ không cần tạo nữa.
+
+Các bạn để ý bên phần sidebar mình thiếu mất một item của quản lý tài khoản, 
+các bạn mở file admin/templates/sidebar.php lên và chèn thêm đoạn code này tiếp tục
+ ở dưới các item trong phần sidebar của admin:
+<a class="list-group-item" href="<?php echo $_DOMAIN; ?>accounts">
+            <span class="glyphicon glyphicon-lock"></span> Tài khoản
+        </a>
+//
+Tiếp theo các bạn mở file admin/includes/footer.php lên và thêm đoạn code này tiếp bên dưới phần active item:
+
+else if ($tab == 'accounts')
+{
+    echo '<script>$(".sidebar ul a:eq(7)").addClass("active");</script>';
+}
+//
+Sau đó, các bạn mở file admin/templates/content.php và thêm cho mình điều kiện này tiếp bên dưới các điều kiện phân trang:
+
+else if ($tab == 'accounts')
+{
+    // Hiển thị template tài khoản
+    require_once 'templates/accounts.php';
+}
+//
+Nếu load trang mà thấy lỗi , do chưa tạo file admin/templates/accounts.php.
+16.
+Tất cả các chức năng dưới đây đều chia làm hai loại: thao tác cùng lúc với nhiều tài khoản hoặc thao tác với một tài khoản chỉ định.
+17.
+Phần này có nhiệm vụ update các thông tin hồ sơ của tài khoản tác giả cũng như quản trị viên.
+
+Các đặc điểm và chức năng trong phần này:
+
+Cập nhật tên hiển thị
+Cập nhật email
+Đổi mật khẩu
+Cập nhật url facebook, google, twitter
+Cập nhật số điện thoại
+Cập nhật giới thiệu
+Upload ảnh đại diện
+
+//
+Các field chúng ta tương tác là:
+
+password: mật khẩu
+display_name: tên hiển thị
+email: tên email
+facebook: url tài khoản Facebook
+google: url tài khoản Google Plus
+twitter: url tài khoản Twitter
+phone: số điện thoại
+description: phần giới thiệu
+url_avatar: url ảnh đại diện  
+Mình sẽ chia các field này thành 3 phần để xây dựng
+
+Upload ảnh đại diện
+Cập nhật các thông tin
+Đổi mật khẩu
+
+//
+Bây giờ các bạn chạy thử xem, mình chắc chắn rằng vẫn còn có cái gì đó không ổn. Đó chính là ảnh đại diện bên sidebar, nó vẫn chưa hiển thị được.
+Để fix lỗi này các bạn chỉ cần mở file admin/templates/sidebar.php lên và thay đổi code //URL ảnh đại diện tài khoản thành đoạn code dưới đây:
+// URL ảnh đại diện tài khoản
+if ($data_user['url_avatar'] == '')
+{
+    echo $_DOMAIN.'images/profile.png';
+}
+else
+{
+    echo str_replace('admin/', '', $_DOMAIN).$data_user['url_avatar'];
+}
+
+18.
+các bạn vào table accounts và chỉnh sửa field phone sang dạng VARCHAR(11) (thay vì ban đầu là INT(11)).
+//
+hức năng này cho phép chúng ta có thể update các thông tin của tài khoản, bao gồm
+
+Tên hiển thị
+Email
+URL Facebook
+URL Google
+URL Twitter
+Số điện thoại
+Giới thiệu
+19.
+Dashboard (bảng điều khiển) là một phần không thể thiếu đối với các trang web như tin tức, bán hàng,... 
+Nó sẽ show cho quản trị viên tất cả các thông tin số cho toàn bộ các mục của website như bài viết, chuyên mục, hình ảnh,... 
+Dashboard có thể giúp các admin có thể nắm các chỉ số của website một cách nhanh chóng và chính xác nhất.
+
+Trong ứng dụng này, dashboard sẽ hiển thị cho các phần sau:
+
+Riêng admin
+Chuyên mục
+Tài khoản
+
+Cả admin và tác giả
+Bài viết
+Hình ảnh
+21.
+Rewrite url để làm gì? 
+Rewrite url làm cho url trong site của chúng ta trở nên thân thiện, đẹp mắt, dễ nhớ và đặc biệt rất tốt cho SEO.
+
+//
+Chúng ta sẽ rewrite 2 dạng url:
+Url bài viết: đây là url của trang hiển thị nội dung của một bài viết nào đó. Dạng url: http://domain.com/slug-bai-viet-id.html.
+Url chuyên mục: là url của các chuyên mục, nó sẽ show ra các bài viết thuộc chuyên mục đó. Dạng url: http://domain.com/slug-chuyen-muc.
+Vì 1 chuyên mục có thể có rất nhiều bài viết nên chúng ta phải phân trang, do đó cũng cần phải rewrite url phân trang để tạo ấn tượng tốt cho người dùng và bot của Google. 
+Dạng url: http://domain.com/slug-chuyen-muc/so-page
